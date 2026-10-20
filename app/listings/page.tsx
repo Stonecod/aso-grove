@@ -1,7 +1,25 @@
 import Link from "next/link";
-import { homes } from "@/lib/homes";
+import { client } from "@/lib/sanity";
 
-export default function ListingsPage() {
+type Listing = {
+  title: string;
+  slug: string;
+  price: string;
+  area: string;
+  beds: number;
+};
+
+export default async function ListingsPage() {
+  const homes = await client.fetch<Listing[]>(
+    `*[_type == "listing"] | order(title asc) {
+      title,
+      "slug": slug.current,
+      price,
+      area,
+      beds
+    }`
+  );
+
   return (
     <main className="mx-auto max-w-6xl px-6 pb-16">
       <h1 className="py-10 text-4xl text-[var(--green)]">Listings</h1>

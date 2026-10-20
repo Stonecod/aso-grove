@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { homes } from "@/lib/homes";
+import { client } from "@/lib/sanity";
+
+type Listing = {
+  title: string;
+  price: string;
+  area: string;
+  beds: number;
+  baths: number;
+  summary: string;
+};
 
 export default async function HomeDetailPage({
   params,
@@ -8,7 +17,17 @@ export default async function HomeDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const home = homes.find((item) => item.slug === slug);
+  const home = await client.fetch<Listing | null>(
+    `*[_type == "listing" && slug.current == $slug][0] {
+      title,
+      price,
+      area,
+      beds,
+      baths,
+      summary
+    }`,
+    { slug }
+  );
 
   if (!home) {
     notFound();
