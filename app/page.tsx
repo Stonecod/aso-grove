@@ -1,12 +1,25 @@
 import Link from "next/link";
+import { client } from "@/lib/sanity";
 
-const homes = [
-  { slug: "maitama-court", title: "Maitama Court", price: "₦420,000,000", area: "Maitama", beds: 5 },
-  { slug: "jabi-shore", title: "Jabi Shore", price: "₦185,000,000", area: "Jabi", beds: 4 },
-  { slug: "asokoro-house", title: "Asokoro House", price: "₦610,000,000", area: "Asokoro", beds: 6 },
-];
+type Listing = {
+  title: string;
+  slug: string;
+  price: string;
+  area: string;
+  beds: number;
+};
 
-export default function HomePage() {
+export default async function HomePage() {
+  const homes = await client.fetch<Listing[]>(
+    `*[_type == "listing"] | order(title asc)[0...3] {
+      title,
+      "slug": slug.current,
+      price,
+      area,
+      beds
+    }`
+  );
+
   return (
     <main className="mx-auto max-w-6xl px-6 pb-16">
       <section className="grid items-center gap-10 py-16 md:grid-cols-2">
@@ -30,7 +43,11 @@ export default function HomePage() {
         <h2 className="text-2xl text-[var(--green)]">Featured homes</h2>
         <div className="mt-6 grid gap-6 md:grid-cols-3">
           {homes.map((home) => (
-            <Link key={home.slug} href={`/listings/${home.slug}`} className="border border-[var(--stone)] p-4">
+            <Link
+              key={home.slug}
+              href={`/listings/${home.slug}`}
+              className="border border-[var(--stone)] p-4"
+            >
               <div className="mb-4 h-40 bg-[var(--stone)]" />
               <h3 className="text-xl">{home.title}</h3>
               <p className="mt-2 text-[var(--green)]">{home.price}</p>
